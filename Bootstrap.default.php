@@ -14,8 +14,8 @@
 	{
 		$host = '__DBHOST__';
 		$dbname = '__DBNAME__';
-		$user = '__DBUSERNAME__';
-		$pass = '__DBPASSWORD__';
+		$user = '__DBUSER__';
+		$pass = '__DBPASS__';
 		$db = new PDO("mysql:host=$host;dbname=$dbname", $user, $pass);  
 	}
 	catch(PDOException $e) 
