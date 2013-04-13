@@ -9,8 +9,9 @@
 	$to = $_POST['to'];
 	$text = $_POST['text'];
 	$textMetaData = calculateStringLengh($text);
-	$length = $textMetaData['byteLength'];
 	$textEncoding = $textMetaData['textEncoding'];
+	$byteLength = $textMetaData['byteLength'];
+	$charLength = $textMetaData['charLength'];
 	$date = time();
 
 	// Authenticate user
@@ -19,9 +20,9 @@
 
 	// ** Case 1: Correct user, password and number
 	if ($userData['authentication'] == 'correct_all')
-	{	
+	{
 		// Save sms to Databse
-		$result = saveSmsToDB($db, $userData['user_id'], $from, $to, $text, $length, $date);
+		$result = saveSmsToDB($db, $userData['user_id'], $from, $to, $text, $textEncoding, $byteLength, $charLength, $date);
 		if ($result)
 		{
 			echo $status = "Success: The SMS was saved in database with ID#" . $result . "\n";
@@ -48,10 +49,10 @@
 	}
 
 	// Log Incoming POST data
-	logToFile($username, $password, $from, $to, $text, $status, $textEncoding, $length, $date);
+	logToFile($username, $password, $from, $to, $text, $status, $textEncoding, $byteLength, $charLength, $date);
 	
 	// Log data
-	function logToFile($username, $password, $from, $to, $text, $status, $textEncoding, $length, $date)
+	function logToFile($username, $password, $from, $to, $text, $status, $textEncoding, $byteLength, $charLength, $date)
 	{
 		// Log Post request
 		$logData = "Date: " . date('c', $date) . "\n";
@@ -61,7 +62,8 @@
 		$logData .= "To: $to \n";
 		$logData .= "Text: $text \n";
 		$logData .= "Text Encoding: $textEncoding \n";
-		$logData .= "Length: $length\n";
+		$logData .= "Byte Length: $byteLength\n";
+		$logData .= "Char Length: $charLength\n";
 		$logData .= "Status: $status";
 		$logData .= "-------------------------------------------------\n";
 		return file_put_contents('/smsRelayPostLog.log', $logData, FILE_APPEND | LOCK_EX);	
@@ -114,14 +116,14 @@
 	}
 	
 	// Define function to save input sms to database
-    function saveSmsToDB($db, $user_id, $from, $to, $text, $length, $date) 
+    function saveSmsToDB($db, $user_id, $from, $to, $text, $textEncoding, $byteLength, $charLength, $date) 
     {		
 		// Implode "to" string to array
 		$toArray = explode(',', $to);
 		
 		// Initialize insert query
-		$insertQueryMain = 'INSERT INTO `all_sms` (`user_id`, `from`, `to`, `text`, `length`, `date`) VALUES ';
-		$insertQueryValuesArray = array_fill(0, count($toArray), "(?, ?, ?, ?, ?, ?)");
+		$insertQueryMain = 'INSERT INTO `all_sms` (`user_id`, `from`, `to`, `text`, `encoding`, `byte_length`, `char_length`, `date`) VALUES ';
+		$insertQueryValuesArray = array_fill(0, count($toArray), "(?, ?, ?, ?, ?, ?, ?, ?)");
 		$insertQueryMain .= implode(',', $insertQueryValuesArray);
 
 		// Append to insert query
@@ -131,7 +133,9 @@
 			$bindParamsArray[] = $from;
 			$bindParamsArray[] = $toSingle;
 			$bindParamsArray[] = $text;
-			$bindParamsArray[] = $length;
+			$bindParamsArray[] = $textEncoding;
+			$bindParamsArray[] = $byteLength;
+			$bindParamsArray[] = $charLength;
 			$bindParamsArray[] = $date;
 		}
 		
