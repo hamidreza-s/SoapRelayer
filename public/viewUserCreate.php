@@ -119,7 +119,7 @@
 					<div class="control-group">
 					<label class="control-label"></label>
 					<div class="controls">
-					<button type="submit" class="btn btn-success" >Create User</button>
+					<button type="submit" class="btn btn-success" >Submit User</button>
 				</div>
 				</div>
 			</form>
@@ -128,6 +128,18 @@
 			<!-- Start > User List -->
 			<div class="span5">
 			<legend>User List</legend>
+			
+			<table id="usersTable" class="table table-hover table-condensed">
+				<thead>
+				  <tr>
+					<th>ID</th>
+					<th>Username</th>
+				  </tr>
+				</thead>
+				<tbody>
+				</tbody>
+			  </table>			
+			
 			</div> 
 			<!-- End > User List -->		
 		</div>
@@ -140,13 +152,57 @@
 		var formValueQueryString = jQuery(formElement).formSerialize();
 		jQuery.ajax({
 			type: 'GET',
-			url: '../apps/usersController.php?' + formValueQueryString,
+			url: '../apps/controllerUserCreate.php?' + formValueQueryString,
 			success: function(data) {
-				console.log(data);
+				var savedUserData = data;
+				appendNewUserRow(savedUserData);
+				jQuery(formElement).clearForm();
 			}
 		});		
 	}
-
+	
+	function ajaxRetrieveUsersAndShow()
+	{
+		jQuery.ajax({
+			type: 'GET',
+			url: '../apps/controllerUserRetrieve.php',
+			success: function(data) {
+				var retrievedUsersData = jQuery.parseJSON(data);
+				
+				for(var i in retrievedUsersData)
+				{
+					jQuery("#usersTable tbody").append(
+						"<tr><td>" 
+						+	retrievedUsersData[i].id
+						+ "</td><td>" 
+						+	retrievedUsersData[i].username
+						+ "<i class='icon-edit pull-right'></i>"		
+						+ "</td></tr>"
+					);
+				}
+			}
+		});				
+	}
+	
+	function appendNewUserRow(data)
+	{
+		savedUserData = jQuery.parseJSON(data);
+		if (savedUserData.status)
+		{
+			jQuery("#usersTable tbody").append(
+				"<tr class='success'><td>" 
+				+	savedUserData.id
+				+ "</td><td>" 
+				+	savedUserData.username
+				+ "<i class='icon-edit pull-right'></i>"
+				+ "</td></tr>"
+			);	
+		}
+	}
+	
+	jQuery(function($){
+		ajaxRetrieveUsersAndShow();
+	});
 	</script>
 	
 
