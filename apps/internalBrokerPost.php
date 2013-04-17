@@ -13,33 +13,52 @@
 	$date = time();
 
 	// Store incoming SMS to DB
-	$result = saveSmsToDB($db, $from, $to, $text, $textEncoding, $byteLength, $charLength, $date);
-	if($result)
+	$dbSavedID = saveSmsToDB($db, $from, $to, $text, $textEncoding, $byteLength, $charLength, $date);
+	if($dbSavedID)
 	{
 		// Get user data
 		$userData = getUserDataByFromNumber($db, $from);
 		sendReplyWithCurl($from, $to, $text, $userData['url']);
 	}
 	
-
 	// Log Incoming POST data
-	//logToFile($from, $to, $text, /*$status,*/ $textEncoding, $length, $date);
+	logToFile($from, $to, $text, $dbSavedID, $textEncoding, $byteLength, $charLength, $date);
+	
+	// Show Status to browser JSON-Formated
+	showToBrowser($from, $to, $text, $dbSavedID, $textEncoding, $byteLength, $charLength, $date);
+
+	// Show data
+	function showToBrowser($from, $to, $text, $dbSavedID, $textEncoding, $byteLength, $charLength, $date)
+	{
+		// Set HTTP response header to JSON
+		header('Content-Type: application/json');
+		
+		// Create Post request array
+		$arrayData['Date'] = date('c', $date);
+		$arrayData['From'] = $from;
+		$arrayData['To'] = $to;
+		$arrayData['Text'] = $text;
+		$arrayData['Text Encoding'] = $textEncoding;
+		$arrayData['Byte Length'] = (int) $byteLength;
+		$arrayData['Char Length'] = (int) $charLength;
+		$arrayData['DB Saved ID'] = (int) $dbSavedID;
+		echo json_encode($arrayData);
+	}
 	
 	// Log data
-	function logToFile($from, $to, $text, /*$status,*/ $textEncoding, $length, $date)
+	function logToFile($from, $to, $text, $dbSavedID, $textEncoding, $byteLength, $charLength, $date)
 	{
 		// Log Post request
 		$logData = "Date: " . date('c', $date) . "\n";
-		$logData .= "Username: $username \n";
-		$logData .= "Password: $password \n";
 		$logData .= "From: $from \n";
 		$logData .= "To: $to \n";
 		$logData .= "Text: $text \n";
 		$logData .= "Text Encoding: $textEncoding \n";
-		$logData .= "Length: $length\n";
-		/*$logData .= "Status: $status";*/
+		$logData .= "Byte Length: $byteLength\n";
+		$logData .= "Char Length: $charLength\n";
+		$logData .= "DB Saved ID: $dbSavedID \n";
 		$logData .= "-------------------------------------------------\n";
-		return file_put_contents('/smsRelayPostLog.log', $logData, FILE_APPEND | LOCK_EX);	
+		return file_put_contents('/smsBrokerPostLog.log', $logData, FILE_APPEND | LOCK_EX);	
 	}
 	
 	// Get URL by "From Number"
@@ -121,6 +140,7 @@
 						);
 
 		// Url-ify the data for the POST
+		$fieldsString = '';
 		foreach($fields as $key=>$value) { $fieldsString .= $key . '=' . $value . '&';  }
 		rtrim($fieldsString, '&');
 

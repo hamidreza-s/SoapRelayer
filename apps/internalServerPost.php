@@ -25,31 +25,54 @@
 		$result = saveSmsToDB($db, $userData['user_id'], $from, $to, $text, $textEncoding, $byteLength, $charLength, $date);
 		if ($result)
 		{
-			echo $status = "Success: The SMS was saved in database with ID#" . $result . "\n";
+			$status = "Success: The SMS was saved in database with ID#" . $result;
 		}
 		else
 		{
-			echo $status = "Error: There was an error in saving data to database!\n";
+			$status = "Error: There was an error in saving data to database!";
 		}
 	}
 	// ** Case 2: Wrong user password
 	elseif ($userData['authentication'] == 'wrong_pass')
 	{
-		echo $status = "Error: Wrong Password!\n";
+		$status = "Error: Wrong Password!";
 	}
 	// ** Case 3: Wrong username
 	elseif ($userData['authentication'] == 'wrong_user')
 	{
-		echo $status = "Error: Wrong Username!\n";
+		$status = "Error: Wrong Username!";
 	}
 	// ** Case 4: Wrong number
 	elseif ($userData['authentication'] == 'wrong_from')
 	{
-		echo $status = "Error: Wrong From Number!\n";
+		$status = "Error: Wrong From Number!";
 	}
 
 	// Log Incoming POST data
 	logToFile($username, $password, $from, $to, $text, $status, $textEncoding, $byteLength, $charLength, $date);
+	
+	// Show Status to browser JSON-Formated
+	showToBrowser($username, $password, $from, $to, $text, $status, $textEncoding, $byteLength, $charLength, $date);
+
+	// Show data
+	function showToBrowser($username, $password, $from, $to, $text, $status, $textEncoding, $byteLength, $charLength, $date)
+	{
+		// Set HTTP response header to JSON
+		header('Content-Type: application/json');
+			
+		// Create Post request array
+		$arrayData['Date'] = date('c', $date);
+		$arrayData['Username'] = $username ;
+		$arrayData['Password'] = $password;
+		$arrayData['From'] = $from;
+		$arrayData['To'] = $to;
+		$arrayData['Text'] = $text;
+		$arrayData['Text Encoding'] = (int) $textEncoding;
+		$arrayData['Byte Length'] = (int) $byteLength;
+		$arrayData['Char Length'] = (int) $charLength;
+		$arrayData['Status'] = $status;
+		echo json_encode($arrayData);
+	}
 	
 	// Log data
 	function logToFile($username, $password, $from, $to, $text, $status, $textEncoding, $byteLength, $charLength, $date)
@@ -64,7 +87,7 @@
 		$logData .= "Text Encoding: $textEncoding \n";
 		$logData .= "Byte Length: $byteLength\n";
 		$logData .= "Char Length: $charLength\n";
-		$logData .= "Status: $status";
+		$logData .= "Status: $status\n";
 		$logData .= "-------------------------------------------------\n";
 		return file_put_contents('/smsRelayPostLog.log', $logData, FILE_APPEND | LOCK_EX);	
 	}
