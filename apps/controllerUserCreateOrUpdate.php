@@ -9,11 +9,12 @@
 		$id = $_GET['id'];
 		$username = $_GET['username'];
 		$password =  $_GET['password'];
+		$credit = $_GET['credit'];
 		$url =  $_GET['url'];
 		$numbers =  $_GET['numbers'];
 
 		// Update user in Database
-		$result = updateUserInDb($db, $id, $username, $password, $url, $numbers);
+		$result = updateUserInDb($db, $id, $username, $password, $credit, $url, $numbers);
 
 		if ($result)
 		{
@@ -21,6 +22,7 @@
 			$response['id'] = $result;
 			$response['username'] = $username;
 			$response['password'] = $password;
+			$response['credit'] = $credit;
 			$response['url'] = $url;
 			$response['numbers'] = $numbers;
 			header('Conten-Type: application/json');
@@ -31,6 +33,7 @@
 			$response['status'] = false;
 			$response['username'] = $username;
 			$response['password'] = $password;
+			$response['credit'] = $credit;
 			$response['url'] = $url;
 			$response['numbers'] = $numbers;
 			header('Conten-Type: application/json');
@@ -43,11 +46,12 @@
 		// Fetch Get data
 		$username = $_GET['username'];
 		$password =  $_GET['password'];
+		$credit = $_GET['credit'];
 		$url =  $_GET['url'];
 		$numbers =  $_GET['numbers'];
 
 		// Save user to Database
-		$result = saveUserToDb($db, $username, $password, $url, $numbers);
+		$result = saveUserToDb($db, $username, $password, $credit, $url, $numbers);
 		
 		if ($result)
 		{
@@ -55,6 +59,7 @@
 			$response['id'] = $result;
 			$response['username'] = $username;
 			$response['password'] = $password;
+			$response['credit'] = $credit;
 			$response['url'] = $url;
 			$response['numbers'] = $numbers;
 			header('Conten-Type: application/json');
@@ -65,6 +70,7 @@
 			$response['status'] = false;
 			$response['username'] = $username;
 			$response['password'] = $password;
+			$response['credit'] = $credit;
 			$response['url'] = $url;
 			$response['numbers'] = $numbers;
 			header('Conten-Type: application/json');
@@ -73,14 +79,14 @@
 	}
 	
 	// Update user in Database function
-	function updateUserInDb($db, $id, $username, $password, $url, $numbers)
+	function updateUserInDb($db, $id, $username, $password, $credit, $url, $numbers)
 	{
 		// Create query
-		$updateQuery = 'UPDATE  `users` SET  `username` = ?, `password` = ?, `url` = ?, `numbers` = ? WHERE  `id` = ?';
+		$updateQuery = 'UPDATE  `users` SET  `username` = ?, `password` = ?, `credit` = ?, `url` = ?, `numbers` = ? WHERE  `id` = ?';
 		
 		// Prepare and execute query
 		$preparedStatement = $db->prepare($updateQuery);
-		$result = $preparedStatement->execute(array($username, $password, $url, $numbers, $id));
+		$result = $preparedStatement->execute(array($username, $password, $credit, $url, $numbers, $id));
 
 		// Return result
 		if($result)
@@ -96,14 +102,14 @@
 	
 	
 	// Save user to Database function
-	function saveUserToDb($db, $username, $password, $url, $numbers)
+	function saveUserToDb($db, $username, $password, $credit, $url, $numbers)
 	{
 		// Create query
-		$insertQuery = 'INSERT INTO `users` (`username`, `password`, `url`, `numbers`) VALUES (?, ?, ?, ?)';
+		$insertQuery = 'INSERT INTO `users` (`username`, `password`, `credit`, `url`, `numbers`) VALUES (?, ?, ?, ?, ?)';
 		
 		// Prepare and execute query
 		$preparedStatement = $db->prepare($insertQuery);
-		$result = $preparedStatement->execute(array($username, $password, $url, $numbers));
+		$result = $preparedStatement->execute(array($username, $password, $credit, $url, $numbers));
 		
 		// Return result
 		if($result)

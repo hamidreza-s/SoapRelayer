@@ -45,30 +45,12 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand" href="#">Project name</a>
+          <a class="brand" href="#">Armaghan (Admin)</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li class="active"><a href="#">Home</a></li>
-              <li><a href="#about">About</a></li>
-              <li><a href="#contact">Contact</a></li>
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
-                <ul class="dropdown-menu">
-                  <li><a href="#">Action</a></li>
-                  <li><a href="#">Another action</a></li>
-                  <li><a href="#">Something else here</a></li>
-                  <li class="divider"></li>
-                  <li class="nav-header">Nav header</li>
-                  <li><a href="#">Separated link</a></li>
-                  <li><a href="#">One more separated link</a></li>
-                </ul>
-              </li>
+              <li class="active"><a href="#">Manage User</a></li>
+              <li><a href="viewAdminListSMS.php">Manage SMS</a></li>
             </ul>
-            <form class="navbar-form pull-right" id="sign-in">
-              <input class="span2" type="text" placeholder="Email">
-              <input class="span2" type="password" placeholder="Password">
-              <button type="submit" class="btn">Sign in</button>
-            </form>
           </div><!--/.nav-collapse -->
         </div>
       </div>
@@ -119,6 +101,15 @@
 						</div>
 					</div>
 					<div class="control-group">
+						<label class="control-label">Credit</label>
+						<div class="controls">
+							<div class="input-prepend">
+							<span class="add-on"><i class="icon-shopping-cart"></i></span>
+								<input type="Text" id="input-credit" class="input-xlarge" name="credit" placeholder="Credit">
+							</div>
+						</div>
+					</div>					
+					<div class="control-group">
 					<label class="control-label"></label>
 					<div class="controls">
 					<button type="submit" class="btn btn-success" >Submit User</button>
@@ -131,7 +122,7 @@
 			<div class="span5">
 			<legend>User List</legend>
 			
-			<table id="usersTable" class="table table-hover table-condensed">
+			<table id="user-table" class="table table-hover table-condensed">
 				<thead>
 				  <tr>
 					<th>ID</th>
@@ -146,6 +137,8 @@
 			<!-- End > User List -->		
 		</div>
 		<!-- Start > First Row -->
+
+		
 	</div>
 
 	<script type="text/javascript">
@@ -177,7 +170,7 @@
 					var updatedUserData = data;
 					modifyUpdatedUserRow(updatedUserData);
 					jQuery(formElement).clearForm();
-					console.log(jQuery(formElement).children("input:hidden").remove());
+					jQuery(formElement).children("input:hidden").remove();
 				}
 			});	
 		}
@@ -190,10 +183,10 @@
 			url: '../apps/controllerUserRetrieve.php',
 			success: function(data) {
 				var retrievedUsersData = jQuery.parseJSON(data);
-				
+				// ** 1, Show retrieved data
 				for(var i in retrievedUsersData)
 				{
-					jQuery("#usersTable tbody").append(
+					jQuery("#user-table tbody").append(
 						"<tr><td>" 
 						+	retrievedUsersData[i].id
 						+ "</td><td>" 
@@ -204,10 +197,24 @@
 						+ "</td></tr>"
 					);
 				}
+				// ** 2, Bind click event
+				var retrievedUserRows = jQuery('#user-table').find('i');
+				bindClickEventToUserList(retrievedUserRows);
 			}
 		});				
 	}
 
+	function bindClickEventToUserList(elementToBind)
+	{
+		jQuery(elementToBind).bind('click', function(event) {
+			var elementUserId = jQuery(event.target).attr('id').replace( /\D/g, '');
+			if (elementUserId !== undefined) 
+			{ 
+				ajaxRetrieveUserAndFillForm(elementUserId); 
+			}
+		}); 
+	}
+	
 	function ajaxRetrieveUserAndFillForm(userId)
 	{
 		jQuery.ajax({
@@ -224,30 +231,42 @@
 				jQuery('#input-password').val(retrievedUserData.password);
 				jQuery('#input-url').val(retrievedUserData.url);
 				jQuery('#input-numbers').val(retrievedUserData.numbers);
+				jQuery('#input-credit').val(retrievedUserData.credit);
 			}
 		});
 	}
 	
 	function appendNewUserRow(data)
 	{
+		// ** 1, Append new row
 		var savedUserData = jQuery.parseJSON(data);
 		if (savedUserData.status)
 		{
-			jQuery("#usersTable tbody").append(
+			jQuery("#user-table tbody").append(
 				"<tr class='success'><td>" 
 				+	savedUserData.id
 				+ "</td><td>" 
 				+	savedUserData.username
 				+ "<a href='#'><i id='user-id-" 
-				+  savedUserData.username
+				+  savedUserData.id
 				+ "' class='icon-edit pull-right'></i></a>"
 				+ "</td></tr>"
 			);	
 		}
+		
+		// **2, Bind click event to it
+		jQuery("#user-id-" + savedUserData.id + "").bind('click', function(event) {
+			var elementUserId = jQuery(event.target).attr('id').replace( /\D/g, '');
+			if (elementUserId !== undefined) 
+			{ 
+				ajaxRetrieveUserAndFillForm(elementUserId); 
+			}
+		});		
 	}
 
 	function modifyUpdatedUserRow(data)
 	{
+		// ** 1, Append new row
 		var updatedUserData = jQuery.parseJSON(data);
 		if (updatedUserData.status)
 		{
@@ -262,17 +281,19 @@
 				+ '" class="icon-edit pull-right"></i></a></td>'
 			);
 		}
-	}
-	
-	jQuery(function($){
-		ajaxRetrieveUsersAndShow();
-		jQuery('#usersTable').bind('click', function(event) {
+		
+		// **2, Bind click event to it
+		jQuery("#user-id-" + updatedUserData.id + "").bind('click', function(event) {
 			var elementUserId = jQuery(event.target).attr('id').replace( /\D/g, '');
 			if (elementUserId !== undefined) 
 			{ 
 				ajaxRetrieveUserAndFillForm(elementUserId); 
-			} 
-		});
+			}
+		});				
+	}
+	
+	jQuery(function($){
+		ajaxRetrieveUsersAndShow();
 	});
 	</script>
 	

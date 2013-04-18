@@ -57,6 +57,7 @@
 		$preparedStatement->execute();
 		
 		// Fetch data
+		$usersArray = null;
 		while ($userArray = $preparedStatement->fetch(PDO::FETCH_ASSOC))
 		{
 			$usersArray[] = $userArray;
