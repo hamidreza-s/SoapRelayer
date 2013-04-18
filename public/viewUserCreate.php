@@ -10,6 +10,7 @@
     <!-- Le javascript -->
     <script src="./js/jquery-1.7.2.min.js"></script>	
     <script src="./js/jquery-form.js"></script>	
+    <script src="./js/query-to-json.js"></script>	
 	
     <!-- Le styles -->
     <link href="./css/bootstrap.css" rel="stylesheet">
@@ -63,7 +64,7 @@
                 </ul>
               </li>
             </ul>
-            <form class="navbar-form pull-right">
+            <form class="navbar-form pull-right" id="sign-in">
               <input class="span2" type="text" placeholder="Email">
               <input class="span2" type="password" placeholder="Password">
               <button type="submit" class="btn">Sign in</button>
@@ -78,14 +79,15 @@
 		<div class="row">
 			<!-- Start > User Form -->
 			<div class="span6">
-			<form id="createUser" class="form-horizontal" onsubmit="ajaxCreateUser(this); return false">
+			<form id="user-form" class="form-horizontal" onsubmit="ajaxCreateOrUpdateUser(this); return false">
 					<legend>Create User</legend>
+					
 					<div class="control-group">
 						<label class="control-label">Username</label>
 						<div class="controls">
 							<div class="input-prepend">
 							<span class="add-on"><i class="icon-user"></i></span>
-								<input type="text" class="input-xlarge" id="fname" name="username" placeholder="Username">
+								<input type="text" class="input-xlarge" id="input-username" name="username" placeholder="Username">
 							</div>
 						</div>
 					</div>
@@ -94,7 +96,7 @@
 						<div class="controls">
 							<div class="input-prepend">
 							<span class="add-on"><i class="icon-lock"></i></span>
-								<input type="Password" id="passwd" class="input-xlarge" name="password" placeholder="Password">
+								<input type="Password" id="input-password" class="input-xlarge" name="password" placeholder="Password">
 							</div>
 						</div>
 					</div>
@@ -103,7 +105,7 @@
 						<div class="controls">
 							<div class="input-prepend">
 							<span class="add-on"><i class="icon-envelope"></i></span>
-								<input type="text" class="input-xlarge" id="email" name="url" placeholder="URL">
+								<input type="text" class="input-xlarge" id="input-url" name="url" placeholder="URL">
 							</div>
 						</div>
 					</div>
@@ -112,7 +114,7 @@
 						<div class="controls">
 							<div class="input-prepend">
 							<span class="add-on"><i class="icon-signal"></i></span>
-								<input type="Text" id="conpasswd" class="input-xlarge" name="numbers" placeholder="Numbers">
+								<input type="Text" id="input-numbers" class="input-xlarge" name="numbers" placeholder="Numbers">
 							</div>
 						</div>
 					</div>
@@ -147,18 +149,38 @@
 	</div>
 
 	<script type="text/javascript">
-	function ajaxCreateUser(formElement)
+	function ajaxCreateOrUpdateUser(formElement)
 	{
 		var formValueQueryString = jQuery(formElement).formSerialize();
-		jQuery.ajax({
-			type: 'GET',
-			url: '../apps/controllerUserCreate.php?' + formValueQueryString,
-			success: function(data) {
-				var savedUserData = data;
-				appendNewUserRow(savedUserData);
-				jQuery(formElement).clearForm();
-			}
-		});		
+		var formValueJson = formValueQueryString.QueryStringToJSON();
+		
+		// Create User
+		if (isNaN(formValueJson.id)) 
+		{
+			jQuery.ajax({
+				type: 'GET',
+				url: '../apps/controllerUserCreateOrUpdate.php?' + formValueQueryString,
+				success: function(data) {
+					var savedUserData = data;
+					appendNewUserRow(savedUserData);
+					jQuery(formElement).clearForm();
+				}
+			});		
+		}
+		// Update User
+		else
+		{
+			jQuery.ajax({
+				type: 'GET',
+				url: '../apps/controllerUserCreateOrUpdate.php?' + formValueQueryString,
+				success: function(data) {
+					var updatedUserData = data;
+					modifyUpdatedUserRow(updatedUserData);
+					jQuery(formElement).clearForm();
+					console.log(jQuery(formElement).children("input:hidden").remove());
+				}
+			});	
+		}
 	}
 	
 	function ajaxRetrieveUsersAndShow()
@@ -176,17 +198,39 @@
 						+	retrievedUsersData[i].id
 						+ "</td><td>" 
 						+	retrievedUsersData[i].username
-						+ "<i class='icon-edit pull-right'></i>"		
+						+ "<a href='#'><i id='user-id-" 
+						+  retrievedUsersData[i].id
+						+ "' class='icon-edit pull-right'></i></a>"		
 						+ "</td></tr>"
 					);
 				}
 			}
 		});				
 	}
+
+	function ajaxRetrieveUserAndFillForm(userId)
+	{
+		jQuery.ajax({
+			type: 'GET',
+			url: '../apps/controllerUserRetrieve.php?id=' + userId,
+			success: function(data) {
+				var retrievedUserData = jQuery.parseJSON(data);
+				if (jQuery("#input-id").length === 0)
+				{
+					jQuery("#user-form").append('<input type="hidden"id="input-id" name="id" value="">');
+				}
+				jQuery('#input-id').val(retrievedUserData.id);
+				jQuery('#input-username').val(retrievedUserData.username);
+				jQuery('#input-password').val(retrievedUserData.password);
+				jQuery('#input-url').val(retrievedUserData.url);
+				jQuery('#input-numbers').val(retrievedUserData.numbers);
+			}
+		});
+	}
 	
 	function appendNewUserRow(data)
 	{
-		savedUserData = jQuery.parseJSON(data);
+		var savedUserData = jQuery.parseJSON(data);
 		if (savedUserData.status)
 		{
 			jQuery("#usersTable tbody").append(
@@ -194,14 +238,41 @@
 				+	savedUserData.id
 				+ "</td><td>" 
 				+	savedUserData.username
-				+ "<i class='icon-edit pull-right'></i>"
+				+ "<a href='#'><i id='user-id-" 
+				+  savedUserData.username
+				+ "' class='icon-edit pull-right'></i></a>"
 				+ "</td></tr>"
 			);	
+		}
+	}
+
+	function modifyUpdatedUserRow(data)
+	{
+		var updatedUserData = jQuery.parseJSON(data);
+		if (updatedUserData.status)
+		{
+			var trUpdatedRow = jQuery('#user-id-' + updatedUserData.id).parents('tr');
+			jQuery(trUpdatedRow).html(
+				'<td>' 
+				+ updatedUserData.id 
+				+ '</td><td>' 
+				+ updatedUserData.username
+				+ '<a href="#"><i id="user-id-' 
+				+ updatedUserData.id
+				+ '" class="icon-edit pull-right"></i></a></td>'
+			);
 		}
 	}
 	
 	jQuery(function($){
 		ajaxRetrieveUsersAndShow();
+		jQuery('#usersTable').bind('click', function(event) {
+			var elementUserId = jQuery(event.target).attr('id').replace( /\D/g, '');
+			if (elementUserId !== undefined) 
+			{ 
+				ajaxRetrieveUserAndFillForm(elementUserId); 
+			} 
+		});
 	});
 	</script>
 	
