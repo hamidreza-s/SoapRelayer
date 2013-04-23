@@ -13,7 +13,7 @@
 	{	
 		// initialize non-WSDL SOAP server
 		$server = new Zend_Soap_Server(null,
-			array('uri' => 'http://local.relay.armaghan.com/internalServerWs.php')
+			array('uri' => 'http://local.relay.armaghan.com/apps/internalServerWs.php')
 		);
 		
 		// set SOAP service calss
@@ -29,6 +29,7 @@
 		// get and log last responses
         $soapResponse = $server->getLastResponse();
         file_put_contents('/soap_response.txt', $soapResponse, FILE_APPEND | LOCK_EX);
+		
 	}
 
 	elseif(isset($_GET['wsdl']))
@@ -40,7 +41,7 @@
 		$wsdl->setClass('Relay_Sms_Class');
 		
 		// set SOAP server URI
-		$wsdl->setUri('http://local.relay.armaghan.com/internalServerWs.php');
+		$wsdl->setUri('http://local.relay.armaghan.com/apps/internalServerWs.php');
 		
 		// show WSDL
 		$wsdl->handle();
@@ -53,13 +54,13 @@
 			// Initialize Client
 			$client = new Zend_Soap_Client(null,
 				array(
-					'location'	=>	'http://local.relay.armaghan.com/internalServerWs.php?handle',
-					'uri'			=>	'http://local.relay.armaghan.com/internalServerWs.php?handle'
+					'location'	=>	'http://local.relay.armaghan.com/apps/internalServerWs.php?handle',
+					'uri'			=>	'http://local.relay.armaghan.com/apps/internalServerWs.php?handle'
 				)
 			);
 			
 			// Set WSDL to client
-			$client->setWsdl('http://local.relay.armaghan.com/internalServerWs.php?wsdl');
+			$client->setWsdl('http://local.relay.armaghan.com/apps/internalServerWs.php?wsdl');
 			
 			// Show Functions
 			echo "<h3>Functions List:</h3>";

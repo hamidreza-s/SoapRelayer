@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS `all_sms` (
   `encoding` varchar(15) NOT NULL,
   `byte_length` varchar(15) NOT NULL,
   `char_length` varchar(15) NOT NULL,
+  `sms_unit` varchar(15) NOT NULL,
   `date` varchar(20) NOT NULL,
   `recipient_id` int(15) DEFAULT 0,
   `status_id` int(15) DEFAULT 0,
