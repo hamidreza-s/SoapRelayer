@@ -84,7 +84,7 @@ class Relay_Sms_Class
 	}	
 
 	// Authenticate user, check phone number and credit
-	private function authenticateUser($username, $password, $from, $toCount)
+	private function authenticateUserAndEtc($username, $password, $from, $toCount, $recursiveFrom = false)
 	{
 		// Prepare and execute query
 		$preparedStatement = $this->db->prepare("SELECT `id`, `username`, `password`, `credit`, `numbers` FROM `users` WHERE `username` = :username");
@@ -94,9 +94,21 @@ class Relay_Sms_Class
 		// Check "From Numbers" correctness
 		$dbFromNumbersArray = explode(',', $dbUserData['numbers']);
 		$fromNumberCorrectness = false;
-		foreach ($dbFromNumbersArray as $dbFromNumber)
+		// From is an array of numbers
+		if ($recursiveFrom)
 		{
-			if ($dbFromNumber == $from) { $fromNumberCorrectness = true;	break;}
+			$clientFromNumbersArray = explode(',', $from);
+			$fromHasDiff = array_diff($clientFromNumbersArray, $dbFromNumbersArray);
+			if (empty($fromHasDiff)) { $fromNumberCorrectness = true; }
+		}
+		// From is a single number
+		else
+		{
+			foreach ($dbFromNumbersArray as $dbFromNumber)
+			{
+				if ($dbFromNumber == $from) { $fromNumberCorrectness = true;	break; }
+			}
+			$fromHasDiff = $from;
 		}
 		
 		if ($dbUserData)
@@ -128,7 +140,10 @@ class Relay_Sms_Class
 				// From number is Wrong
 				else
 				{
-					return array('authentication' => 'wrong_from');
+					return array(
+						'authentication' => 'wrong_from',
+						'wrong_number' => $fromHasDiff
+					);
 				}
 			}
 			// Password is wrong
@@ -144,6 +159,39 @@ class Relay_Sms_Class
 		}
 	}	
    
+	// Authenticate user, check phone number and credit
+	private function authenticateUserOnly($username, $password)
+	{
+		// Prepare and execute query
+		$preparedStatement = $this->db->prepare("SELECT `id`, `username`, `password`, `credit`, `numbers` FROM `users` WHERE `username` = :username");
+		$preparedStatement->execute(array(":username" => $username));
+		$dbUserData = $preparedStatement->fetch();
+		
+		if ($dbUserData)
+		{
+			// Password is correct
+			if ($dbUserData['password'] == $password)
+			{
+				// Every thing is OK!
+				return array(
+					'authentication' => 'correct_all',
+					'user_id' => $dbUserData['id'],
+					'credit' => $dbUserData['credit']
+				);
+			}
+			// Password is wrong
+			else
+			{
+				return array('authentication' => 'wrong_pass');
+			}
+		}
+		// Username is wrong
+		else
+		{
+			return array('authentication' => 'wrong_user');
+		}
+	}	
+      
    /**
      * Send one SMS to many phone numbers
      *
@@ -161,7 +209,7 @@ class Relay_Sms_Class
 		$toCount = count($toArray);
 		
 		// Authenticate user
-		$userData = $this->authenticateUser($username, $password, $from, $toCount);
+		$userData = $this->authenticateUserAndEtc($username, $password, $from, $toCount);
 		if ($userData['authentication'] != 'correct_all') { return $userData; }
 		$userId = $userData['user_id'];
 		$userCredit = $userData['user_credit'];
@@ -177,13 +225,15 @@ class Relay_Sms_Class
 		$newCredit = $userCredit - ($toCount * $smsUnit);
 		
 		// Initialize insert query
-		$insertSmsQuery = 'INSERT INTO `all_sms` (`user_id`, `from`, `to`, `text`, `encoding`, `byte_length`, `char_length`, `sms_unit`, `date`) VALUES ';
-		$insertQueryValuesArray = array_fill(0, count($toArray), "(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		$insertSmsQuery = 'INSERT INTO `all_sms` (`id`, `user_id`, `from`, `to`, `text`, `encoding`, `byte_length`, `char_length`, `sms_unit`, `date`) VALUES ';
+		$insertQueryValuesArray = array_fill(0, count($toArray), "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		$insertSmsQuery .= implode(',', $insertQueryValuesArray);
 
 		// Append to insert query
+		$idCounter = 1;
 		foreach ($toArray as $toSingle)
 		{
+			$bindParamsArray[] = microtime(true) * mt_rand(10000,11000) . $idCounter++;
 			$bindParamsArray[] = $userId;
 			$bindParamsArray[] = $from;
 			$bindParamsArray[] = $toSingle;
@@ -241,27 +291,31 @@ class Relay_Sms_Class
     {
 		// Implode "to" string to array
 		$toArray = explode(',', $to);
+		$fromArray = explode(',', $from);
 		$toCount = count($toArray);
 		
 		// Authenticate user
-		$userData = $this->authenticateUser($username, $password, $from, $toCount);
+		$userData = $this->authenticateUserAndEtc($username, $password, $from, $toCount, true);
 		if ($userData['authentication'] != 'correct_all') { return $userData; }
 		$userId = $userData['user_id'];
 		$userCredit = $userData['user_credit'];
 		
 		// Initialize insert query
-		$insertSmsQuery = 'INSERT INTO `all_sms` (`user_id`, `from`, `to`, `text`, `encoding`, `byte_length`, `char_length`, `sms_unit`, `date`) VALUES ';
-		$insertQueryValuesArray = array_fill(0, count($toArray), "(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		$insertSmsQuery = 'INSERT INTO `all_sms` (`id`, `user_id`, `from`, `to`, `text`, `encoding`, `byte_length`, `char_length`, `sms_unit`, `date`) VALUES ';
+		$insertQueryValuesArray = array_fill(0, count($toArray), "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		$insertSmsQuery .= implode(',', $insertQueryValuesArray);
 
 		// Initialize counter
-		$counter = 0;
+		$textCounter = 0;
+		$fromCounter = 0;
+		$idCounter = 1;
 		
 		// Append to insert query
 		foreach ($toArray as $toSingle)
 		{	
 			// Calculate text properties
-			$textSingle = $text[$counter++];
+			$textSingle = $text[$textCounter++];
+			$fromSingle = $fromArray[$fromCounter++];
 			$textMetaData = $this->calculateStringLengh($textSingle);
 			$textEncoding = $textMetaData['textEncoding'];
 			$byteLength = $textMetaData['byteLength'];
@@ -270,8 +324,9 @@ class Relay_Sms_Class
 			$allSmsUnit += $smsUnit;
 
 			// Bind parameters to insert sms query
+			$bindParamsArray[] = microtime(true) * mt_rand(10000,11000) . $idCounter++;
 			$bindParamsArray[] = $userId;
-			$bindParamsArray[] = $from;
+			$bindParamsArray[] = $fromSingle;
 			$bindParamsArray[] = $toSingle;
 			$bindParamsArray[] = $textSingle;
 			$bindParamsArray[] = $textEncoding;
@@ -316,8 +371,48 @@ class Relay_Sms_Class
 		}
     }
 
-	public function changePassword() {}
-	public function getCredit() {}
+	/**
+     * Change user's password
+     *
+	 * @param string $username
+	 * @param string $oldPassword
+	 * @param string $newPassword
+     * @return integer changedUserId
+     */	
+	public function changePassword($username, $oldPassword, $newPassword) 
+	{
+		$userData = $this->authenticateUserOnly($username, $oldPassword);
+		if ($userData['authentication'] != 'correct_all') { return $userData; }
+		$userId = $userData['user_id'];
+
+		// Initialize update password query
+		$updateQuery = 'UPDATE  `users` SET  `password` = ? WHERE  `id` = ?';
+		
+		// Prepare and execute query
+		$preparedStatement = $this->db->prepare($updateQuery);
+		$result = $preparedStatement->execute(array($newPassword, $userId));
+		
+		if ($result)
+		{
+			return $userId;
+		}
+	}
+
+	/**
+     * Get user credit
+     *
+	 * @param string $username
+	 * @param string $password
+     * @return integer credit
+     */		
+	public function getCredit($username, $password) 
+	{
+		$userData = $this->authenticateUserOnly($username, $password);
+		if ($userData['authentication'] != 'correct_all') { return $userData; }
+		$userCredit = $userData['credit'];
+		return $userCredit;
+	}
+	
 	public function getStatus() {}
 	
 }

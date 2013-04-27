@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS `all_sms` (
-  `id` int(15) unsigned NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) unsigned NOT NULL,
   `user_id` int(15) unsigned NOT NULL,
   `from` varchar(25) DEFAULT NULL,
   `to` varchar(25) DEFAULT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `all_sms` (
   `recipient_id` int(15) DEFAULT 0,
   `status_id` int(15) DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int(15) unsigned NOT NULL AUTO_INCREMENT,

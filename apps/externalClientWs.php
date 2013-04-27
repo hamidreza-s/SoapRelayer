@@ -19,8 +19,19 @@
 	catch (Exception $e) { Zend_Debug::dump($e); }
 		
 	// Fire!
-	//$result = $client->sendSmsOneToMany('Hamid', '123', '123', '111,222', 'testText');
-	//Zend_Debug::dump($result);
-	$result = $client->sendSmsManyToMany('hamid', '123', '123,123', '111,222', array('text1','text2'));
+	//$result = $client->sendSmsOneToMany('test', 'test', '50003', '1111,2222', 'testText');
+	$result = $client->sendSmsManyToMany('test', 'test', '50001,50002,50003', '1111,2222,3333', array('text1','text2','text3'));
+	//$result = $client->getCredit('hamidreza', 'password');
+	//$result = $client->changePassword('hamidreza', 'nn', 'password');
 	Zend_Debug::dump($result);
+
 ?>
+
+
+
+
+
+
+
+
+

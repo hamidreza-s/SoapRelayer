@@ -79,6 +79,11 @@
 		catch (Exception $e) { Zend_Debug::dump($e); }	
 	}
 	
+	elseif($_GET['test'])
+	{
+	
+	}
+	
 	else
 	{
 		echo "Web service documentation!";
