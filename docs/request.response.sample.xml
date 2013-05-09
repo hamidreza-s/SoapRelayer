@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope" xmlns:ns1="http://local.relay.armaghan.com/apps/internalServerWs.php" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:enc="http://www.w3.org/2003/05/soap-encoding">
+	<env:Body>
+		<ns1:getStatus env:encodingStyle="http://www.w3.org/2003/05/soap-encoding">
+			<id xsi:type="xsd:string">149352141401431</id>
+		</ns1:getStatus>
+	</env:Body>
+</env:Envelope>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope" xmlns:ns1="http://local.relay.armaghan.com/apps/internalServerWs.php" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns2="http://xml.apache.org/xml-soap" xmlns:enc="http://www.w3.org/2003/05/soap-encoding">
+	<env:Body xmlns:rpc="http://www.w3.org/2003/05/soap-rpc">
+		<ns1:getStatusResponse env:encodingStyle="http://www.w3.org/2003/05/soap-encoding">
+			<rpc:result>return</rpc:result>
+			<return xsi:type="ns2:Map">
+				<item>
+					<key xsi:type="xsd:string">recipient_id</key>
+					<value xsi:type="xsd:string">999</value>
+				</item>
+				<item>
+					<key xsi:type="xsd:int">0</key>
+					<value xsi:type="xsd:string">999</value>
+				</item>
+				<item>
+					<key xsi:type="xsd:string">status_id</key>
+					<value xsi:type="xsd:string">1</value>
+				</item>
+				<item>
+					<key xsi:type="xsd:int">1</key>
+					<value xsi:type="xsd:string">1</value>
+				</item>
+			</return>
+		</ns1:getStatusResponse>
+	</env:Body>
+</env:Envelope>

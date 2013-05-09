@@ -1,9 +1,15 @@
 <?php
 	// Include Bootstrap
-	require_once './Bootstrap.php';
+	require_once './Loader.php';
+	require_once '../apps/DB.php';
 
 	// Include nessecary classes
-	require "library/Armaghan/Relay_Sms_Class.php";
+	require "Armaghan/Relay_Sms_Class.php";
+	
+	$serverAddress = 'http://' . $_SERVER['SERVER_NAME'] . '/public/internalServerWs.php';
+	$serverAddressHandle = 'http://' . $_SERVER['SERVER_NAME'] . '/public/internalServerWs.php?handle';
+	$serverAddressFunctions = 'http://' . $_SERVER['SERVER_NAME'] . '/public/internalServerWs.php?functions';
+	$serverAddressWsdl = 'http://' . $_SERVER['SERVER_NAME'] . '/public/internalServerWs.php?wsdl';
 	
 	// get and log HTTP requests
 	//$httpRequest = apache_request_headers();
@@ -13,7 +19,7 @@
 	{	
 		// initialize non-WSDL SOAP server
 		$server = new Zend_Soap_Server(null,
-			array('uri' => 'http://local.relay.armaghan.com/apps/internalServerWs.php')
+			array('uri' => $serverAddress)
 		);
 		
 		// set SOAP service calss
@@ -23,12 +29,12 @@
 		$server->handle();
 		
 		// get and last requests
-        $soapRequest = $server->getLastRequest();
-        file_put_contents('/soap_requst.txt', $soapRequest, FILE_APPEND | LOCK_EX);
+        //$soapRequest = $server->getLastRequest();
+        //file_put_contents('/soap_requst.txt', $soapRequest, FILE_APPEND | LOCK_EX);
 		
 		// get and log last responses
-        $soapResponse = $server->getLastResponse();
-        file_put_contents('/soap_response.txt', $soapResponse, FILE_APPEND | LOCK_EX);
+        //$soapResponse = $server->getLastResponse();
+        //file_put_contents('/soap_response.txt', $soapResponse, FILE_APPEND | LOCK_EX);
 		
 	}
 
@@ -41,7 +47,7 @@
 		$wsdl->setClass('Relay_Sms_Class');
 		
 		// set SOAP server URI
-		$wsdl->setUri('http://local.relay.armaghan.com/apps/internalServerWs.php');
+		$wsdl->setUri($serverAddress);
 		
 		// show WSDL
 		$wsdl->handle();
@@ -54,13 +60,13 @@
 			// Initialize Client
 			$client = new Zend_Soap_Client(null,
 				array(
-					'location'	=>	'http://local.relay.armaghan.com/apps/internalServerWs.php?handle',
-					'uri'			=>	'http://local.relay.armaghan.com/apps/internalServerWs.php?handle'
+					'location'	=>	$serverAddressHandle,
+					'uri'			=>	$serverAddressHandle
 				)
 			);
 			
 			// Set WSDL to client
-			$client->setWsdl('http://local.relay.armaghan.com/apps/internalServerWs.php?wsdl');
+			$client->setWsdl($serverAddressWsdl);
 			
 			// Show Functions
 			echo "<h3>Functions List:</h3>";
@@ -79,15 +85,21 @@
 		catch (Exception $e) { Zend_Debug::dump($e); }	
 	}
 	
-	elseif($_GET['test'])
+	elseif(isset($_GET['test']) )
 	{
-	
+		echo $serverAddress;
+		echo '<br/>';
+		echo $serverAddressFunctions;
+		echo '<br/>';
+		echo $serverAddressHandle;
+		echo '<br/>';
+		echo $serverAddressWsdl;
+		echo '<br/>';
+		
 	}
 	
 	else
 	{
 		echo "Web service documentation!";
 	}
-
-
 ?>

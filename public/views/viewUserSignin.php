@@ -36,7 +36,6 @@
   </head>
 
   <body>
-
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
@@ -59,7 +58,7 @@
 		<!-- Start > First Row -->		
 		<div class="row">
 			<div class="span2" id="signin-or-welcome">
-				<form class="form-signin" id="form-signin" onsubmit="authenticateAndShowSMS(this); return false;">
+				<form class="form-signin" id="form-signin" method="post">
 					<input type="text" class="input-block-level" name="username" placeholder="Username">
 					<input type="password" class="input-block-level" name="password" placeholder="Password">
 					<button class="btn btn-large btn-primary" type="submit">Sign in</button>
@@ -76,105 +75,9 @@
 	</div>
 
 	<script type="text/javascript">
-	function authenticateAndShowSMS(formElement)
-	{
-		var formValue = jQuery(formElement).formSerialize();
-		var formValueJson = formValue.QueryStringToJSON();
-		jQuery.ajax({
-			type: 'GET',
-			url: '../apps/controllerUserRetrieve.php',
-			success: function(data) {
-				var retrievedUsersData = jQuery.parseJSON(data);
-				
-				var passwordStatus = false;
-				var userStatus = false;
-				var userId = null;
-				for(var i in retrievedUsersData)
-				{
-					if (retrievedUsersData[i].username == formValueJson.username)
-					{
-						var userStatus = true;
-						if (retrievedUsersData[i].password == formValueJson.password)
-						{
-							var passwordStatus = true;
-							userData = retrievedUsersData[i];
-						}
-					}
-				}				
-				
-				// Show sign in status
-				if (!userStatus || !passwordStatus)
-				{
-					jQuery("#signin-status").html('Wrong Password!');
-				}
-				else
-				{
-					jQuery("#signin-status").html('Correct Password!');
-					ajaxRetrieveSmsAndShow(userData.id);
-					showUserData(userData);
-				}
-			}
-		});	
-	}
 
-	
-	function showUserData(userData)
-	{
-		jQuery("#form-signin").remove();
-		jQuery("#signin-or-welcome").html(
-			"<strong>Hello, </strong>"
-			+ userData.username
-			+ "!"
-			+ "<br/>Your ID: "
-			+ userData.id
-			+ "<br/>Username: "
-			+ userData.username
-			+ "<br/>URL: "
-			+ userData.url
-			+ "<br/>Credit: "
-			+ userData.credit
-			+ "<br/>"
-		);
-	}
-	
-	function ajaxRetrieveSmsAndShow(userId)
-	{
-		jQuery.ajax({
-			type: 'GET',
-			url: '../apps/controllerSmsRetrieve.php?id=' + userId,
-			success: function(data) {
-				var retrievedSmsData = jQuery.parseJSON(data);
-				var counter = 1;
-				jQuery("#sms-list").empty();
-				for(var i in retrievedSmsData)
-				{
-					jQuery("#sms-list").append(
-						"<strong>#"
-						+ counter++
-						+ "</strong>: "
-						+ "SMS ID:" 
-						+	retrievedSmsData[i].id
-						+ " - From:" 
-						+  retrievedSmsData[i].from
-						+ " - To:"		
-						+  retrievedSmsData[i].to
-						+ " - Text:"	
-						+  retrievedSmsData[i].text
-						+ " - Date:"		
-						+  retrievedSmsData[i].date
-						+ " - Recepient ID:"		
-						+  retrievedSmsData[i].recipient_id
-						+ " - Status ID:"		
-						+  retrievedSmsData[i].status_id
-						+ "<br/>"								
-					);
-				}
-			}
-		});				
-	}	
-	
 	jQuery(function($){
-		
+
 	});
 	</script>
 	

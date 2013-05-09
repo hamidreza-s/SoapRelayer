@@ -1,6 +1,7 @@
 <?php
 	// Include Bootstrap
-	require_once './Bootstrap.php';
+	require_once './Loader.php';
+	require_once '../apps/DB.php';
 		
 	// Fetch POST request
 	$username = $_POST['username'];

@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `id` int(15) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL UNIQUE,
   `password` varchar(50) NOT NULL,
+  `role` varchar(10) NOT NULL DEFAULT  'user',
   `credit` int(15) DEFAULT 0,
   `utf8_fee` float NOT NULL,
   `ascii_fee` float NOT NULL,

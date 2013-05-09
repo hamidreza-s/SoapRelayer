@@ -18,7 +18,7 @@ class Relay_Sms_Class
 		try
 		{
 			$host = 'localhost';
-			$dbname = 'sms_relay';
+			$dbname = 'sms_broker';
 			$user = 'root';
 			$pass = 'i181MYSQL';
 			$this->db = new PDO("mysql:host=$host;dbname=$dbname", $user, $pass);  
@@ -413,6 +413,19 @@ class Relay_Sms_Class
 		return $userCredit;
 	}
 	
-	public function getStatus() {}
+	/**
+     * Get status of sms by its ID
+     *
+	 * @param string $id
+     * @return integer status
+     */
+	public function getStatus($id) 
+	{
+		// Prepare and execute query
+		$preparedStatement = $this->db->prepare("SELECT `recipient_id`, `status_id` FROM `all_sms` WHERE `id` = :id");
+		$preparedStatement->execute(array(":id" => $id));
+		$dbUserData = $preparedStatement->fetch();
+		return $dbUserData;
+	}
 	
 }

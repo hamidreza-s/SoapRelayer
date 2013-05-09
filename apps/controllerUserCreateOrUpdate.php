@@ -1,6 +1,7 @@
 <?php
 	// Include Bootstrap
-	require_once './Bootstrap.php';
+	require_once './DB.php';
+	require_once './Loader.php';
 
 	// Update User
 	if(isset($_GET['id']))
