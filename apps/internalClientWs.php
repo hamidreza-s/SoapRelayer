@@ -5,7 +5,7 @@
 	
 	// Determine chunk limit
 	$chunkLimit = 5;
-	
+	/*
 	// Set Web Service WSDL
 	$_WSDL = '__SWDL__ADDRESS__';
 	
@@ -31,9 +31,9 @@
 	}
 	catch (SoapFault $s) { Zend_Debug::dump($s); }
 	catch (Exception $e) { Zend_Debug::dump($e); }
-	
+	*/
 	// Retrieve data from database
-	$queryString = "SELECT * FROM all_sms WHERE recipient_id = 0"; 
+	$queryString = "SELECT * FROM all_sms WHERE recipient_id = 0 LIMIT 0,10"; 
 	$createQuery = $db->query($queryString);
 	
 	// If recipiend_id = 0 exists
@@ -44,10 +44,14 @@
 		{
 			// Make array
 			$selectResult[] = $row;
-		}
+		}	
 		
 		// Chunked array
 		$chunkedResult = array_chunk($selectResult, $chunkLimit);
+		
+		var_dump($chunkedResult);
+		}
+		/*
 		
 		// Create final arrays
 		$counter = 1;
@@ -76,7 +80,7 @@
 			);
 			
 			
-			/*
+			
 			// Test output
 			echo "<h3>Chunk#" . $counter++ . "</h3>";
 			echo "From:";
@@ -86,7 +90,7 @@
 			echo "Text:";
 			Zend_Debug::dump($finalText);
 			echo "<hr/>";
-			*/
+			
 			
 			// Clean arrays
 			unset($finalFrom);
@@ -94,7 +98,7 @@
 			unset($finalText);
 		}
 		
-		/*
+		
 		// For Test
 		$chunkedRecipientIDs[0][] = '54965286';
 		$chunkedRecipientIDs[0][] = '55445544';
@@ -105,7 +109,7 @@
 		$chunkedRecipientIDs[2][] = '44558855';
 		$chunkedRecipientIDs[2][] = '85458974';
 		$chunkedRecipientIDs[2][] = '22418543';
-		*/
+		
 		
 		// Flatten $chunkedRecipientIDs Array
 		foreach ($chunkedRecipientIDs as $recipientIDs)
@@ -137,6 +141,7 @@
 	{
 		echo 'Right now, there is no SMS chunk in Database to send!';
 	}
+	
 ?>
 
 

@@ -29,12 +29,12 @@
 		$server->handle();
 		
 		// get and last requests
-        //$soapRequest = $server->getLastRequest();
-        //file_put_contents('/soap_requst.txt', $soapRequest, FILE_APPEND | LOCK_EX);
+        $soapRequest = $server->getLastRequest();
+        file_put_contents('/soap_requst.txt', $soapRequest, FILE_APPEND | LOCK_EX);
 		
 		// get and log last responses
-        //$soapResponse = $server->getLastResponse();
-        //file_put_contents('/soap_response.txt', $soapResponse, FILE_APPEND | LOCK_EX);
+        $soapResponse = $server->getLastResponse();
+        file_put_contents('/soap_response.txt', $soapResponse, FILE_APPEND | LOCK_EX);
 		
 	}
 
